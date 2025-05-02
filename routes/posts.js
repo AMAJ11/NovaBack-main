@@ -62,7 +62,7 @@ router.post('/', verifytoken, uploadphoto.single('image'), asynchandler(async (r
     }
     const { error } = validatcreate(req.body);
     if (error) {
-        res.status.json({ message: error.details[0].message })
+        res.status(400).json({ message: error.details[0].message })
     }
     const pathimg = path.join(__dirname, `../images/${req.file.filename}`)
     const result = await UploadImage(pathimg);
