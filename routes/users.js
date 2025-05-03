@@ -130,6 +130,44 @@ router.delete('/profile/:id', verifytokenandauthorization, asynchandler(async (r
     }
 }))
 
+//  router.post('/searchbyname',asynchandler(async(req,res)=>{
+//     const {UserSearch} = req.body
+//     const user=await User.find({username:{
+//         $all:[
+//         UserSearch
+//         ]
+//     }})
+//     if(!user){
+//         return res.status(404).json({message:"user not found"})
+//     }
+//     return res.status(200).json({userId:user._id,username:user.username,image:user.profilephoto})
+//  }))
+
+router.post('/searchbyname', async (req, res) => {
+    try {
+      const { name } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: 'Name Required' });
+      }
+  
+      const users = await User.find({
+        username: { $regex: name, $options: 'i' }
+      });
+  
+      if (users.length === 0) {
+        return res.status(404).json({ message: 'User Not Found' });
+      }
+  
+      res.status(200).json(users);
+    } catch (error) {
+      console.error('Something get wrong', error);
+      res.status(500).json({ message: 'Something get wrong' });
+    }
+  });
+
+
+
 router.post('/profile/profile-photo-upload', verifytoken, uploadphoto.single('image'), asynchandler(async (req, res) => {
     // console.log(req.file);
     if (!req.file) {
