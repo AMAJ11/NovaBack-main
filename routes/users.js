@@ -142,29 +142,26 @@ router.delete('/profile/:id', verifytokenandauthorization, asynchandler(async (r
 //     }
 //     return res.status(200).json({userId:user._id,username:user.username,image:user.profilephoto})
 //  }))
-
 router.post('/searchbyname', async (req, res) => {
     try {
       const { name } = req.body;
-      
+  
       if (!name) {
         return res.status(400).json({ message: 'Name Required' });
       }
   
       const users = await User.find({
         username: { $regex: name, $options: 'i' }
-      });
-  
-      if (users.length === 0) {
-        return res.status(404).json({ message: 'User Not Found' });
-      }
+      }).select('username profilephoto.url'); // تحديد الحقول المطلوبة فقط
   
       res.status(200).json(users);
+      
     } catch (error) {
-      console.error('Something get wrong', error);
-      res.status(500).json({ message: 'Something get wrong' });
+      console.error('Something went wrong', error);
+      res.status(500).json({ message: 'Something went wrong' });
     }
   });
+  
 
 
 
