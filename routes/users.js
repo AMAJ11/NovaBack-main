@@ -182,6 +182,8 @@ router.post('/profile/profile-photo-upload', verifytoken, uploadphoto.single('im
         publicId: result.public_id
     }
     await user.save();
+    const User=await User.findById(req.user.id)
+    
 
     res.status(201).json({ message: "image uploaded seccussfully", profilephoto: { url: result.secure_url, publicId: result.public_id } });
     fs.unlinkSync(pathimg);

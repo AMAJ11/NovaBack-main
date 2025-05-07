@@ -93,6 +93,12 @@ Userschema.virtual("posts", {
     localField: "_id"
 })
 
+Postschema.virtual("comments", {
+    ref: "Comment",
+    foreignField: "user",
+    localField: "_id"
+})
+
 const User = mongoose.model('User', Userschema)
 
 const validatregister = (obj) => {
