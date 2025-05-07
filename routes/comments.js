@@ -35,6 +35,8 @@ router.post('/', verifytoken, asynchandler(async (req, res) => {
         profilephoto: getusername.profilephoto.url
     })
     await newcomment.save();
+    const UpdateUser = await User.findById(req.user.id);
+    newcomment.user = UpdateUser;
     const post = await Post.findById(req.body.postId);
     if (post.user.toString() !== req.user.id) {
         SendNotification(post.user.toString(), 'New comment on your post', {
