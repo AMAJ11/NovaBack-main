@@ -30,20 +30,20 @@ router.post('/', verifytoken, asynchandler(async (req, res) => {
     const newcomment = new Comment({
         postId: req.body.postId,
         text: req.body.text,
-        user: req.user.id,
+        user: getusername,
         username: getusername.username,
         profilephoto: getusername.profilephoto.url
     })
-   await newcomment.save();
-   const post = await Post.findById(req.body.postId);
-   if (post.user.toString() !== req.user.id) {
-       SendNotification(post.user.toString(), 'New comment on your post', {
-           postId: post._id,
-           commentId: newcomment._id,
-           userId: req.user.id,
-           type: 'new_comment'
-       });
-   }
+    await newcomment.save();
+    const post = await Post.findById(req.body.postId);
+    if (post.user.toString() !== req.user.id) {
+        SendNotification(post.user.toString(), 'New comment on your post', {
+            postId: post._id,
+            commentId: newcomment._id,
+            userId: req.user.id,
+            type: 'new_comment'
+        });
+    }
     res.status(201).json({ status: "success", newcomment })
 }))
 router.patch('/:id', verifytoken, asynchandler(async (req, res) => {

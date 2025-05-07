@@ -78,7 +78,7 @@ router.post('/', verifytoken, uploadphoto.single('image'), asynchandler(async (r
     })
     newpost.save();
     const user = await User.findById(req.user.id);
-    const followers = user.followers; // افترض أن لديك حقل followers في نموذج User
+    const followers = user.followers; 
 
     followers.forEach(followerId => {
         SendNotification(followerId, 'New post from user you follow', {
