@@ -9,35 +9,29 @@ const { SendNotification } = require('../socket/socket');
 const router = express.Router();
 
 router.get('/', asynchandler(async (req, res) => {
-    const comments = await Comment.find()
-    // .populate("user", ["-password"])
+    const comments = await Comment.find().populate("user", ["username", "profilephoto"]);
     res.status(200).json({ status: "success", comments })
 }))
 router.get('/:id', asynchandler(async (req, res) => {
-    const comment = await Comment.findById(req.params.id)
+    const comment = await Comment.findById(req.params.id).populate("user", ["username", "profilephoto"])
     if (!comment) {
         return res.status(404).json({ message: "comment not found" })
     }
     res.status(200).json({ status: "success", comment })
-    // .populate("user", ["-password"])
+        .populate("user", ["-password"])
 }))
 router.post('/', verifytoken, asynchandler(async (req, res) => {
     const { error } = validatcreateComment(req.body)
     if (error) {
         return res.status(404).json({ message: error.details[0].message })
     }
-    const getusername = await User.findById(req.user.id);
+    // const getusername = await User.findById(req.user.id);
     const newcomment = new Comment({
         postId: req.body.postId,
         text: req.body.text,
-        user: getusername,
-        username: getusername.username,
-        profilephoto: getusername.profilephoto.url
+        user: req.user.id,
     })
     await newcomment.save();
-    const UpdateUser = await User.findById(req.user.id);
-    newcomment.user = UpdateUser;
-    newcomment.profilephoto=UpdateUser.profilephoto.url
     const post = await Post.findById(req.body.postId);
     if (post.user.toString() !== req.user.id) {
         SendNotification(post.user.toString(), 'New comment on your post', {

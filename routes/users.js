@@ -20,12 +20,12 @@ const generateactivecode = () => {
 router.get('/profile', verifytokenandisAdmin, asynchandler(async (req, res) => {
     // console.log(req.headers.authorization);
 
-    const users = await User.find({}, { "__v": false, "password": false }).populate("posts");
+    const users = await User.find({}, { "__v": false, "password": false }).populate("posts").populate("comments");
     res.status(201).json({ status: "success", data: users })
 
 }))
 router.get('/profile/:id', asynchandler(async (req, res) => {
-    const user = await User.findById(req.params.id).select("-password").select("-token").populate("posts");
+    const user = await User.findById(req.params.id).select("-password").select("-token").populate("posts").populate("comments");
     if (!user) {
         return res.status(403).json({ message: "user not found" });
     }
@@ -144,24 +144,24 @@ router.delete('/profile/:id', verifytokenandauthorization, asynchandler(async (r
 //  }))
 router.post('/searchbyname', async (req, res) => {
     try {
-      const { name } = req.body;
-  
-      if (!name) {
-        return res.status(400).json({ message: 'Name Required' });
-      }
-  
-      const users = await User.find({
-        username: { $regex: name, $options: 'i' }
-      }).select('username profilephoto.url'); // تحديد الحقول المطلوبة فقط
-  
-      res.status(200).json(users);
-      
+        const { name } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ message: 'Name Required' });
+        }
+
+        const users = await User.find({
+            username: { $regex: name, $options: 'i' }
+        }).select('username profilephoto.url'); // تحديد الحقول المطلوبة فقط
+
+        res.status(200).json(users);
+
     } catch (error) {
-      console.error('Something went wrong', error);
-      res.status(500).json({ message: 'Something went wrong' });
+        console.error('Something went wrong', error);
+        res.status(500).json({ message: 'Something went wrong' });
     }
-  });
-  
+});
+
 
 
 
@@ -182,8 +182,6 @@ router.post('/profile/profile-photo-upload', verifytoken, uploadphoto.single('im
         publicId: result.public_id
     }
     await user.save();
-    const User=await User.findById(req.user.id)
-    
 
     res.status(201).json({ message: "image uploaded seccussfully", profilephoto: { url: result.secure_url, publicId: result.public_id } });
     fs.unlinkSync(pathimg);
@@ -206,24 +204,24 @@ router.patch('/follow/:id', verifytoken, asynchandler(async (req, res) => {
     if (isFollowing) {
         await User.findByIdAndUpdate(req.params.id, {
             $pull: { followers: req.user.id }
-        },{new:true});
+        }, { new: true });
         await User.findByIdAndUpdate(req.user.id, {
             $pull: { following: req.params.id }
-        },{new:true});
+        }, { new: true });
     } else {
         await User.findByIdAndUpdate(req.params.id, {
             $addToSet: { followers: req.user.id }
-        },{new:true});
+        }, { new: true });
         await User.findByIdAndUpdate(req.user.id, {
             $addToSet: { following: req.params.id }
-        },{new:true});
+        }, { new: true });
         if (isFollowedByTarget) {
             await User.findByIdAndUpdate(req.params.id, {
                 $addToSet: { following: req.user.id }
-            },{new:true});
+            }, { new: true });
             await User.findByIdAndUpdate(req.user.id, {
                 $addToSet: { followers: req.params.id }
-            },{new:true});
+            }, { new: true });
         }
         SendNotification(req.params.id, 'you have a new follow', {
             userToFollow,
@@ -233,7 +231,7 @@ router.patch('/follow/:id', verifytoken, asynchandler(async (req, res) => {
     }
     const updatedUserToFollow = await User.findById(req.params.id);
     const updatedCurrentUser = await User.findById(req.user.id);
-     
+
     res.status(200).json({
         status: "success",
         data: {

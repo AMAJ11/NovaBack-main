@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const joi = require('joi');
 
-const Commentschema = new mongoose.Schema({
+const CommentSchema = new mongoose.Schema({
     text: {
         type: String,
         required: true,
@@ -17,16 +17,8 @@ const Commentschema = new mongoose.Schema({
         ref: 'Post',
         required: true
     },
-    username: {
-        type: String,
-        required: true
-    },
-    profilephoto:{
-        type:String,
-        required:true
-    },
 }, { timestamps: true });
-const Comment = mongoose.model("Comment", Commentschema)
+const Comment = mongoose.model("Comment", CommentSchema)
 
 const validatcreateComment = (obj) => {
     const schema = joi.object({
@@ -35,7 +27,6 @@ const validatcreateComment = (obj) => {
     })
     return schema.validate(obj)
 }
-
 const validatupdateComment = (obj) => {
     const schema = joi.object({
         text: joi.string().trim().required(),

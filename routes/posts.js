@@ -17,16 +17,34 @@ router.get('/', asynchandler(async (req, res) => {
     const { pagenumber, category } = req.query;
     let posts;
     if (pagenumber) {
-        posts = await Post.find().skip((pagenumber - 1) * post_item).limit(post_item).populate("user", ["-password"]).populate("comments").sort({ creadetAt: -1 })
+        posts = await Post.find().skip((pagenumber - 1) * post_item).limit(post_item).populate("user", ["username", "profilephoto"]).populate({
+                path: "comments",
+                populate: {
+                    path: "user",
+                    select: ["username", "profilephoto"] 
+                }
+            }).sort({ creadetAt: -1 })
         res.status(201).json({ posts });
     }
     if (category) {
-        posts = await Post.find({ category }).populate("user", ["-password"]).populate("comments");
+        posts = await Post.find({ category }).populate("user", ["username", "profilephoto"]).populate({
+                path: "comments",
+                populate: {
+                    path: "user",
+                    select: ["username", "profilephoto"] // تحديد الحقول المطلوبة للمستخدم في التعليق
+                }
+            })
 
         res.status(201).json({ posts });
     }
     else {
-        posts = await Post.find().populate("user", ["-password"]).populate("comments");
+        posts = await Post.find().populate("user","-password").populate({
+                path: "comments",
+                populate: {
+                    path: "user",
+                    select: ["username", "profilephoto"] 
+                }
+            })
         res.status(201).json({ posts });
     }
 }))
@@ -48,7 +66,13 @@ router.post('/verify-token', asynchandler(async (req, res) => {
 router.get('/:id', asynchandler(async (req, res) => {
 
     let post;
-    post = await Post.findById(req.params.id).populate("user", ["-password"]).populate("comments");
+    post = await Post.findById(req.params.id).populate("user", ["-password"]).populate({
+                path: "comments",
+                populate: {
+                    path: "user",
+                    select: ["username", "profilephoto"]
+                }
+            })
     if (!post) {
         res.status(400).json({ message: "this post not found" })
     } else {
@@ -78,7 +102,7 @@ router.post('/', verifytoken, uploadphoto.single('image'), asynchandler(async (r
     })
     newpost.save();
     const user = await User.findById(req.user.id);
-    const followers = user.followers; 
+    const followers = user.followers;
 
     followers.forEach(followerId => {
         SendNotification(followerId, 'New post from user you follow', {
